@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website
+  namespace: website
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: website
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+      - name: website
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: website-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: website-content
+        configMap:
+          name: website-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: website-config
+  namespace: website
+data:
+  index.html: |
+    <html>
+    <head>
+      <title>My Website</title>
+    </head>
+    <body>
+      <h1>Welcome to My Website!</h1>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: website
+  namespace: website
+spec:
+  type: NodePort
+  selector:
+    app: website
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30080
