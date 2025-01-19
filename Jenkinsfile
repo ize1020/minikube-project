@@ -25,18 +25,22 @@ pipeline {
         }
         stage('Prepare Deployment') {
             steps {
-                sh '''
-                mkdir -p output
-                cp -r src/* output/
-                '''
+                container('jnlp') {
+                    sh '''
+                    mkdir -p output
+                    cp -r src/* output/
+                    '''
+                }
             }
         }
         stage('Deploy to Kubernetes') {
             steps {
-                sh '''
-                kubectl create namespace website || true
-                kubectl apply -f website-deployment.yaml -n website
-                '''
+                container('kubectl') {
+                    sh '''
+                    kubectl create namespace website || true
+                    kubectl apply -f website-deployment.yaml -n website
+                    '''
+                }
             }
         }
     }
